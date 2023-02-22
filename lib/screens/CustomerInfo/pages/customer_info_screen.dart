@@ -1,15 +1,17 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:testflutter/cores/alert_popup.dart';
-import 'package:testflutter/cores/loading_process.dart';
-import 'package:testflutter/widgets/ThemeContainer.dart';
-import 'package:testflutter/widgets/WrapTheme.dart';
-import '../model/customer_model.dart';
+import 'package:testflutter/cores/configs/http_config.dart';
+import 'package:testflutter/cores/widgets/alert_popup.dart';
+import 'package:testflutter/cores/widgets/loading_process.dart';
+import 'package:testflutter/cores/widgets/text_field.dart';
+import '../../../cores/widgets/ThemeContainer.dart';
+import '../../../cores/widgets/WrapTheme.dart';
+import '../../../cores/widgets/button_widget.dart';
+import '../../../model/customer_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
-import '../EndPoint/end_point.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
@@ -30,42 +32,32 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
   bool emptyCustomerData = false;
   String dateToday = DateFormat("dd-MM-yyyy").format(DateTime.now());
   String timeNow = DateFormat("HH:mm:ss").format(DateTime.now());
-  List<customer_model> Customer_list = [];
+  List<customer_model> customerList = [];
   @override
   void initState() {
     super.initState();
   }
 
-  // ignore: non_constant_identifier_names
-  void OnhandleOTP() async {
+  void oncheckCustomerInfo() async {
     try {
-      SharedPreferences localStorage = await SharedPreferences.getInstance();
       if (account_CIF.text != '') {
-        // ignore: use_build_context_synchronously
+        customerList = [];
         LoadingProccess().LoadingProcess(context);
-        final queryParameters = {
+        final data = {
           "account": account_CIF.text,
           "cif": account_CIF.text,
           "user": ""
         };
-        String params = json.encode(queryParameters);
-        final uri = Uri.parse('$END_POINT/getAccountDetail');
-        final response = await http.post(uri,
-            headers: {
-              'Content-type': 'application/json',
-              'Authorization': 'Bearer ${localStorage.getString('localToken')}'
-            },
-            body: params);
+        String enData = json.encode(data);
+        final response = await Network().postData(enData, 'getAccountDetail');
         final body = json.decode(response.body);
-        List<customer_model> _Customer_list = [];
-        for (var i = 0; i < body.length; i++) {
-          _Customer_list.add(customer_model.fromJson(body[i]));
-        }
         setState(() {
-          Customer_list = _Customer_list;
+          for (var i = 0; i < body.length; i++) {
+            customerList.add(customer_model.fromJson(body[i]));
+          }
           checkTelephone = false;
           Navigator.of(context).pop();
-          if (Customer_list.isEmpty) {
+          if (customerList.isEmpty) {
             AlertPopup().alertMessageWarning(
                 'ບໍ່ພົບຂໍ້ມູນ, ກະລຸນາກວດເລກບັນຊີ ຫຼື CIF ໃຫ້ຖຶກຕ້ອງ',
                 BuildContext,
@@ -77,16 +69,17 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
           checkTelephone = true;
         });
       }
-    } catch (e) {
+    } on PlatformException catch (e) {
       AlertPopup().alertMessageError(e, BuildContext, context);
+      Navigator.of(context).pop();
     }
   }
 
-  void CopyBirthDateNumber(birthdate) async {
+  void onCopyDateNumber(birthdate) async {
     await Clipboard.setData(ClipboardData(text: birthdate.toString()));
     showTopSnackBar(
       context,
-      CustomSnackBar.success(
+      const CustomSnackBar.success(
         message: "ຄັດລອກຂໍ້ມູນສຳເລັດ",
       ),
     );
@@ -97,8 +90,6 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
     return WrapTheme(
         child: Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        centerTitle: true,
         title: const Text(
           "ກວດຂໍ້ມູນລູກຄ້າ",
           style: TextStyle(fontSize: 18),
@@ -114,8 +105,6 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                   child: Column(
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(
-                        left: 20.0, right: 20.0, top: 20.0, bottom: 10),
                     width: MediaQuery.of(context).size.width,
                     child: Column(children: [
                       const Text(
@@ -141,6 +130,11 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                                 borderSide:
                                     BorderSide(width: 1, color: Colors.blue)),
                           )),
+                      TextFieldWidgets(
+                        controller: account_CIF,
+                        hintText: 'hintText',
+                        align: 'center',
+                      ),
                       checkTelephone
                           ? const Text(
                               'ກະລຸນາປ້ອນເລກບັນຊີ ຫຼື CIF',
@@ -149,11 +143,11 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                           : (const Text('')),
                     ]),
                   ),
-                  (Customer_list.isNotEmpty
+                  (customerList.isNotEmpty
                       ? Container(
                           alignment: Alignment.topLeft,
                           child: Column(
-                            children: CustomerWidgets,
+                            children: customerWidgets,
                           ),
                         )
                       : const Text("")),
@@ -161,21 +155,10 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
               )),
             ),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              primary: const Color(0xFF006FAD),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0.0)),
-              minimumSize: const Size.fromHeight(55),
-            ),
-            onPressed: () {
-              OnhandleOTP();
-            },
-            child: const Text(
-              'ຕໍ່ໄປ',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
+          Container(
+            padding: const EdgeInsets.only(left: 15, right: 15, bottom: 15),
+            color: Colors.white,
+            child: ButtonWidget(onPressed: oncheckCustomerInfo, title: 'ຕໍ່ໄປ'),
           ),
         ],
         // )
@@ -183,12 +166,12 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
     ));
   }
 
-  List<Widget> get CustomerWidgets {
+  List<Widget> get customerWidgets {
     return [
       ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        itemCount: Customer_list.length,
+        itemCount: customerList.length,
         itemBuilder: (context, index) {
           return (Container(
             alignment: Alignment.center,
@@ -208,7 +191,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 16.0),
                             child: Text(
-                                "0${index + 1} ${Customer_list[index].ccy}",
+                                "0${index + 1} ${customerList[index].ccy}",
                                 style: const TextStyle(fontSize: 18)),
                           ),
                         ),
@@ -235,8 +218,8 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                                     ],
                                   ),
                                   onTap: () {
-                                    CopyBirthDateNumber(
-                                        Customer_list[index].birdth);
+                                    onCopyDateNumber(
+                                        customerList[index].birdth);
                                   },
                                 )
                               ]),
@@ -247,9 +230,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                         // ),
                       ]),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Container(
                   alignment: Alignment.topLeft,
                   margin: const EdgeInsets.only(left: 20.0, right: 20.0),
@@ -264,7 +245,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                     Expanded(
                         flex: 0,
                         child: Text(
-                          "${Customer_list[index].cif}",
+                          "${customerList[index].cif}",
                           style: const TextStyle(
                               fontSize: 18, color: Colors.black),
                         )),
@@ -284,7 +265,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                     Expanded(
                         flex: 0,
                         child: Text(
-                          "${Customer_list[index].account}",
+                          "${customerList[index].account}",
                           style: const TextStyle(
                               fontSize: 18, color: Colors.black),
                         )),
@@ -308,7 +289,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              "${Customer_list[index].name1}",
+                              "${customerList[index].name1}",
                               style: const TextStyle(
                                   fontSize: 18,
                                   color: Color.fromARGB(255, 37, 42, 46)),
@@ -337,7 +318,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              "${Customer_list[index].name2}",
+                              "${customerList[index].name2}",
                               style: const TextStyle(
                                   fontSize: 18,
                                   color: Color.fromARGB(255, 37, 42, 46)),
@@ -364,13 +345,13 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                         child: Container(
                           child: Row(
                             children: [
-                              Customer_list[index].birdth == null
+                              customerList[index].birdth == null
                                   ? Container(
                                       alignment: Alignment.center,
                                       child: Column(
                                         children: [
                                           Text(
-                                            "${Customer_list[index].birdth}",
+                                            "${customerList[index].birdth}",
                                             style: const TextStyle(
                                                 fontSize: 18,
                                                 color: Color.fromARGB(
@@ -383,7 +364,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                                       alignment: Alignment.center,
                                       child: Row(children: [
                                         Text(
-                                          "${Customer_list[index].birdth.toString().substring(0, 4)}/${Customer_list[index].birdth.toString().substring(4, 6)}/${Customer_list[index].birdth.toString().substring(6, 8)}",
+                                          "${customerList[index].birdth.toString().substring(0, 4)}/${customerList[index].birdth.toString().substring(4, 6)}/${customerList[index].birdth.toString().substring(6, 8)}",
                                           style: const TextStyle(
                                               fontSize: 18,
                                               color: Color.fromARGB(
@@ -410,7 +391,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                     Expanded(
                         flex: 0,
                         child: Text(
-                          "${Customer_list[index].mobileNo}",
+                          "${customerList[index].mobileNo}",
                           style: const TextStyle(
                               fontSize: 18,
                               color: Color.fromARGB(255, 37, 42, 46)),
@@ -430,7 +411,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                     ),
                     Expanded(
                         flex: 0,
-                        child: Customer_list[index].accountStatus == null
+                        child: customerList[index].accountStatus == null
                             ? const Text(
                                 "Active",
                                 style: TextStyle(
@@ -444,9 +425,7 @@ class _ChecktCustomerInfoState extends State<ChecktCustomerInfo> {
                               )),
                   ]),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
               ],
             ),
           ));

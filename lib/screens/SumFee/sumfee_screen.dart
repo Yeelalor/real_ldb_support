@@ -1,20 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:testflutter/cores/alert_popup.dart';
-import 'package:testflutter/cores/loading_process.dart';
-import 'package:testflutter/widgets/ThemeContainer.dart';
-import 'package:testflutter/widgets/WrapTheme.dart';
-import '../model/result_model.dart';
-import 'package:http/http.dart' as http;
+import 'package:testflutter/cores/configs/http_config.dart';
+import 'package:testflutter/cores/widgets/alert_popup.dart';
+import 'package:testflutter/cores/widgets/loading_process.dart';
+import '../../cores/widgets/ThemeContainer.dart';
+import '../../cores/widgets/WrapTheme.dart';
+import '../../cores/widgets/button_widget.dart';
+import '../../model/result_model.dart';
 import 'dart:convert';
-import '../model/homedata.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
-import '../EndPoint/end_point.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
@@ -25,19 +21,12 @@ class CheckMoney extends StatefulWidget {
 }
 
 class _CheckMoneyState extends State<CheckMoney> {
-  var index = 0;
-  List<homedata> homesList = [];
-  // ignore: non_constant_identifier_names
-  List<result_model> result_list = [];
-  // ignore: non_constant_identifier_names
-  TextEditingController AccountController = TextEditingController();
-  String value = "Fuck";
+  List<result_model> sumFeeResulttList = [];
+  TextEditingController accountController = TextEditingController();
   String dateToday = DateFormat("dd-MM-yyyy").format(DateTime.now());
   String timeNow = DateFormat("HH:mm:ss").format(DateTime.now());
   var filterdata = [];
   bool textfieldEmpty = false;
-  // ignore: non_constant_identifier_names
-  bool result_emptyp = false;
   bool emptydata = false;
   String getError = "";
   @override
@@ -45,38 +34,28 @@ class _CheckMoneyState extends State<CheckMoney> {
     super.initState();
   }
 
-  void ResultCheckMoney() async {
-    // try {} catch (e) {
-    //   AlertPopup().alertMessageError(e, BuildContext, context);
-    // }
+  void onCheckCustomerSumFee() async {
     try {
-      SharedPreferences localStorage = await SharedPreferences.getInstance();
-      if (AccountController.text != '') {
+      if (accountController.text != '') {
+        sumFeeResulttList = [];
         LoadingProccess().LoadingProcess(context);
-        var body = [];
-        var url = Uri.parse('$END_POINT/ListSumFee');
-        var response = await http.get(url, headers: {
-          'Content-type': 'application/json',
-          'Authorization': 'Bearer ${localStorage.getString('localToken')}'
-        });
-        body = json.decode(response.body);
+        final response = await Network().getData('ListSumFee');
+        final body = json.decode(response.body);
         filterdata = body
-            .where((body) => body['fromAccount'] == (AccountController.text))
+            .where((body) => body['fromAccount'] == (accountController.text))
             .toList();
-        List<result_model> ResultList = [];
-        for (var i = 0; i < filterdata.length; i++) {
-          ResultList.add(result_model.fromJson(filterdata[i]));
-        }
         setState(() {
+          for (var i = 0; i < filterdata.length; i++) {
+            sumFeeResulttList.add(result_model.fromJson(filterdata[i]));
+          }
           textfieldEmpty = true;
-          result_list = ResultList;
-          Navigator.of(context).pop();
-          if (result_list.isEmpty) {
+          if (sumFeeResulttList.isEmpty) {
             AlertPopup().alertMessageWarning(
                 'ບໍ່ພົບຂໍ້ມູນ, ກະລຸນາກວດເລກບັນຊີໃຫ້ຖຶກຕ້ອງ',
                 BuildContext,
                 context);
           }
+          Navigator.of(context).pop();
         });
       } else {
         setState(() {
@@ -93,7 +72,6 @@ class _CheckMoneyState extends State<CheckMoney> {
     await Clipboard.setData(ClipboardData(
         text:
             "${(amount)?.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}"));
-    // ignore: use_build_context_synchronously
     showTopSnackBar(
       context,
       const CustomSnackBar.success(
@@ -126,9 +104,6 @@ class _CheckMoneyState extends State<CheckMoney> {
                     alignment: Alignment.center,
                     child: Column(children: [
                       Container(
-                        color: Colors.white,
-                        margin: const EdgeInsets.only(
-                            left: 20.0, right: 20.0, top: 20.0),
                         child: Column(children: [
                           const Text(
                             "ເລກບັນຊີຜູ້ໃຊ້",
@@ -142,7 +117,7 @@ class _CheckMoneyState extends State<CheckMoney> {
                                 LengthLimitingTextInputFormatter(16)
                               ],
                               keyboardType: TextInputType.number,
-                              controller: AccountController,
+                              controller: accountController,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                   fontSize: 20, fontFamily: 'NotoSans'),
@@ -163,15 +138,14 @@ class _CheckMoneyState extends State<CheckMoney> {
                                   'ກະລຸນາປ້ອນເລກບັນຊີ',
                                   style: TextStyle(color: Colors.red),
                                 )
-                              : (const Text('')),
+                              : (const Center()),
                         ]),
                       ),
-                      result_list.isNotEmpty
+                      sumFeeResulttList.isNotEmpty
                           ? (Container(
-                              margin: const EdgeInsets.only(
-                                  left: 20.0, right: 20.0),
+                              margin: const EdgeInsets.only(left: 0, right: 0),
                               alignment: Alignment.center,
-                              child: ShowSumFeeWidget(),
+                              child: showSumFeeWidget(),
                             ))
                           : const Center(),
                     ]),
@@ -180,29 +154,18 @@ class _CheckMoneyState extends State<CheckMoney> {
               )),
             ),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              primary: const Color(0xFF006FAD),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0.0)),
-              minimumSize: const Size.fromHeight(55),
-            ),
-            onPressed: () {
-              ResultCheckMoney();
-            },
-            child: const Text(
-              'ຕໍ່ໄປ',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          )
+          Container(
+              padding: const EdgeInsets.only(left: 15, right: 15, bottom: 15),
+              color: Colors.white,
+              child: ButtonWidget(
+                  onPressed: onCheckCustomerSumFee, title: 'ຕໍ່ໄປ'))
         ],
         // ),
       ),
     ));
   }
 
-  Column ShowSumFeeWidget() {
+  Widget showSumFeeWidget() {
     return Column(
       children: [
         const SizedBox(
@@ -225,7 +188,7 @@ class _CheckMoneyState extends State<CheckMoney> {
               children: [
                 const Expanded(
                   flex: 0,
-                  child: Text("ວັນທີ",
+                  child: Text("ວັນທີ:",
                       style: TextStyle(fontSize: 18, fontFamily: 'NotoSans')),
                 ),
                 Expanded(
@@ -256,7 +219,7 @@ class _CheckMoneyState extends State<CheckMoney> {
                           ],
                         ),
                         onTap: () {
-                          showToastCopy(result_list[0].amount);
+                          showToastCopy(sumFeeResulttList[0].amount);
                         },
                       )
                     ]),
@@ -273,14 +236,14 @@ class _CheckMoneyState extends State<CheckMoney> {
             const Expanded(
               flex: 2,
               child: Text(
-                "ຍອດເງິນສະສົມ",
+                "ຍອດເງິນສະສົມ:",
                 style: TextStyle(fontSize: 18, color: Colors.black),
               ),
             ),
             Expanded(
                 flex: 3,
                 child: Text(
-                  "${(result_list[0].amount)?.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} kip",
+                  "${(sumFeeResulttList[0].amount)?.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} kip",
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -297,7 +260,7 @@ class _CheckMoneyState extends State<CheckMoney> {
             Expanded(
               flex: 2,
               child: Text(
-                "ຍອດເງິນທັງໝົດ",
+                "ຍອດເງິນທັງໝົດ:",
                 style: TextStyle(fontSize: 18, color: Colors.black),
               ),
             ),

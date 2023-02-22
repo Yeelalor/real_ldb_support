@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testflutter/provider/login_provider.dart';
-import 'package:testflutter/screens/home_screen.dart';
-import 'package:testflutter/screens/splash.dart';
-import './screens/login_screen.dart';
+import 'package:testflutter/routes.dart';
+import 'package:testflutter/screens/Splash/splash_screen.dart';
 
 void main() {
   runApp(MultiProvider(providers: [
@@ -15,8 +14,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      child: Container(
+    return Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(colors: [
             Color(0xFF3C98CE),
@@ -24,7 +22,9 @@ class MyApp extends StatelessWidget {
             Color(0xFF144D70),
           ]),
         ),
-        child: MaterialApp(
+        child: GestureDetector(
+          onTap: (() => FocusManager.instance.primaryFocus?.unfocus()),
+          child: MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Flutter Demo',
             theme: ThemeData(
@@ -49,8 +49,9 @@ class MyApp extends StatelessWidget {
               ),
             ),
             // home: const Login()),
-            home: const SplashPage()),
-      ),
-    );
+            home: const SplashPage(),
+            routes: routes(context),
+          ),
+        ));
   }
 }

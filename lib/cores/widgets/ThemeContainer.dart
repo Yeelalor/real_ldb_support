@@ -23,8 +23,10 @@ class ThemeContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          BoxConstraints(minHeight: MediaQuery.of(context).size.height),
+      padding: const EdgeInsets.only(top: 15, left: 15, right: 15),
+      constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height,
+          minWidth: MediaQuery.of(context).size.width),
       decoration: BoxDecoration(
         color: color,
         borderRadius: const BorderRadius.only(

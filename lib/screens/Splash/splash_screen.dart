@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:testflutter/screens/login_screen.dart';
+import 'package:testflutter/screens/Login/login_screen.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class SplashPage extends StatefulWidget {

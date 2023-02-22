@@ -8,6 +8,8 @@ class AlertPopup {
       dialogType: DialogType.success,
       headerAnimationLoop: false,
       animType: AnimType.scale,
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
       title: 'ແຈ້ງເຕືອນ',
       desc: '$msg',
       btnOkColor: const Color(0xFF006FAE),
@@ -21,6 +23,8 @@ class AlertPopup {
       dialogType: DialogType.info,
       headerAnimationLoop: false,
       animType: AnimType.scale,
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
       title: 'ແຈ້ງເຕືອນ',
       desc: '$msg',
       btnOkColor: const Color(0xFF006FAE),
@@ -34,6 +38,8 @@ class AlertPopup {
       dialogType: DialogType.error,
       headerAnimationLoop: false,
       animType: AnimType.scale,
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
       title: 'ແຈ້ງເຕືອນ',
       desc: '$msg',
       btnOkColor: const Color(0xFF006FAE),
@@ -47,10 +53,39 @@ class AlertPopup {
       dialogType: DialogType.warning,
       headerAnimationLoop: false,
       animType: AnimType.scale,
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
       title: 'ແຈ້ງເຕືອນ',
       desc: '$msg',
       btnOkColor: const Color(0xFF006FAE),
       btnOkOnPress: () {},
     ).show();
+  }
+
+  void showSnackBar(context, msg) {
+    final snackBar = SnackBar(
+      content: Container(
+          height: 35,
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.check_circle_sharp,
+                color: Colors.white,
+                size: 30,
+              ),
+              const SizedBox(
+                width: 5,
+              ),
+              Text(
+                '$msg',
+                style: const TextStyle(fontSize: 20),
+              ),
+            ],
+          )),
+      backgroundColor: Colors.green,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

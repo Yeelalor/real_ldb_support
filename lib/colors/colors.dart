@@ -22,7 +22,10 @@ const gradientBackground = RadialGradient(
 // 0xFF3F6786
 // 0xFF193E5C
 
-const bottomButtonLinearGradient = LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [
-  Color(0xFF0B9CE0),
-  Color(0xFF246AB2),
-]);
+const bottomButtonLinearGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      Color(0xFF0B9CE0),
+      Color(0xFF246AB2),
+    ]);

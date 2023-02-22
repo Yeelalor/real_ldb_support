@@ -1,16 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:testflutter/cores/alert_popup.dart';
-import 'package:testflutter/cores/loading_process.dart';
-import 'package:testflutter/provider/login_provider.dart';
-import '../screens/home_screen.dart';
-import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:testflutter/cores/configs/http_config.dart';
+import 'package:testflutter/cores/widgets/alert_popup.dart';
+import 'package:testflutter/cores/widgets/loading_process.dart';
+import '../home/home_screen.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -32,77 +32,47 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     getdata();
-    getAuthToken();
+    Network().getAuthToken();
   }
 
-  void Cleardata() {
-    setState(() {
-      staffID.clear();
-      staffPassword.clear();
-    });
-  }
-
-  _setBasicAuth() => {
-        'Accept': 'application/json',
-        // ignore: prefer_interpolation_to_compose_strings
-        'Authorization': 'Basic ' +
-            base64Encode(utf8.encode(
-                'l1k695f88dbdf2844d2bee65b957f7887d5:f9ba11db16e2472f83e79a412c4fd14d')),
-      };
-
-  getAuthToken() async {
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    final uri =
-        Uri.parse('https://dehome.ldblao.la/vbox-oauth2/v2/authorise/token');
-    var map = <String, dynamic>{};
-    map['grant_type'] = 'client_credentials';
-    final response = await http.post(uri, body: map, headers: _setBasicAuth());
-    final body = json.decode(response.body);
-    await localStorage.setString('localToken', body['access_token']);
-  }
-
-  void Login() async {
+  void onLogin() async {
     try {
       if (staffID.text != '' && staffPassword.text != '') {
-        final String staff_ID = staffID.text;
-        LoadingProccess().LoadingProcess(context);
-        final params = {
-          "username": staffID.text,
-          "password": staffPassword.text,
-        };
-        String jsonparams = json.encode(params);
-        final uri =
-            Uri.parse('https://vehome.ldblao.la/ldb/api/v1/hr-uat/auth/login');
-        final headers = {HttpHeaders.contentTypeHeader: 'application/json'};
-        final response =
-            await http.post(uri, headers: headers, body: jsonparams);
-        final body = json.decode(response.body);
-        if (response.statusCode == 200) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                  builder: (context) => MyHomePage(value: staff_ID)),
-              (route) => false);
-          setState(() {
-            emptyStaffID = false;
-            emptyPassword = false;
-          });
-          if (isChecked == false) {
-            removedata();
-          } else {
-            storedata();
-          }
-        } else {
-          Navigator.of(context).pop();
+        var checkNetwork = await Connectivity().checkConnectivity();
+        if (checkNetwork == ConnectivityResult.none) {
           AlertPopup().alertMessageWarning(
-              'ໄອດີ ຫຼື ລະຫັດຜ່ານບໍ່ຖຶກຕ້ອງ', BuildContext, context);
+              'ກະລຸນາກວດການເຊື່ອມຕໍ່ອີນເຕີເນັດຂອງທ່ານ', BuildContext, context);
+        } else {
+          final String employeeId = staffID.text;
+          LoadingProccess().LoadingProcess(context);
+          final params = {
+            "username": staffID.text,
+            "password": staffPassword.text
+          };
+          String data = json.encode(params);
+          final uri = Uri.parse(
+              'https://vehome.ldblao.la/ldb/api/v1/hr-uat/auth/login');
+          final headers = {HttpHeaders.contentTypeHeader: 'application/json'};
+          final response = await http.post(uri, headers: headers, body: data);
+          if (response.statusCode == 200) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                    builder: (context) => MyHomePage(value: employeeId)),
+                (route) => false);
+            storedata();
+          } else {
+            Navigator.of(context).pop();
+            AlertPopup().alertMessageWarning(
+                'ໄອດີ ຫຼື ລະຫັດຜ່ານບໍ່ຖຶກຕ້ອງ', BuildContext, context);
+          }
         }
       } else {
         AlertPopup().alertMessageWarning(
             'ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບ', BuildContext, context);
       }
-    } catch (error) {
-      AlertPopup().alertMessageError(error, BuildContext, context);
+    } on PlatformException catch (e) {
+      AlertPopup().alertMessageError(e, BuildContext, context);
     }
   }
 
@@ -350,8 +320,7 @@ class _LoginState extends State<Login> {
                           minimumSize: Size.fromHeight(45), //////// HERE
                         ),
                         onPressed: () {
-                          Login();
-                          // getAuthToken();
+                          onLogin();
                         },
                         child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
