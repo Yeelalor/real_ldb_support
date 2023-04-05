@@ -16,11 +16,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [
-            Color(0xFF3C98CE),
-            Color(0xFF2171A1),
-            Color(0xFF144D70),
-          ]),
+          gradient: RadialGradient(
+            colors: [
+              Color(0xFF3C98CE),
+              Color(0xFF2171A1),
+              Color(0xFF144D70),
+            ],
+            center: Alignment.topLeft,
+            radius: 1.2,
+          ),
         ),
         child: GestureDetector(
           onTap: (() => FocusManager.instance.primaryFocus?.unfocus()),
@@ -48,7 +52,7 @@ class MyApp extends StatelessWidget {
                 // systemOverlayStyle: SystemUiOverlayStyle.light
               ),
             ),
-            // home: const Login()),
+            // home: const HomePage(),
             home: const SplashPage(),
             routes: routes(context),
           ),

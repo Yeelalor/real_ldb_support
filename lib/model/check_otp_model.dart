@@ -1,21 +1,34 @@
-class check_otp_model {
-  String? mobileNo;
-  String? message;
-  String? date;
 
-  check_otp_model({this.mobileNo, this.message, this.date});
+import 'dart:convert';
 
-  check_otp_model.fromJson(Map<String, dynamic> json) {
-    mobileNo = json['mobileNo'];
-    message = json['message'];
-    date = json['date'];
-  }
+List<CheckOtpModel> checkOtpModelFromJson(String str) => List<CheckOtpModel>.from(json.decode(str).map((x) => CheckOtpModel.fromJson(x)));
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['mobileNo'] = mobileNo;
-    data['message'] = message;
-    data['date'] = date;
-    return data;
-  }
+String checkOtpModelToJson(List<CheckOtpModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class CheckOtpModel {
+    CheckOtpModel({
+        required this.mobileNo,
+        required this.message,
+        required this.date,
+    });
+
+    String mobileNo;
+    String message;
+    DateTime date;
+
+    factory CheckOtpModel.fromJson(Map<String, dynamic> json) => CheckOtpModel(
+        mobileNo: json["mobileNo"],
+        message: json["message"],
+        date: DateTime.parse(json["date"]),
+    );
+
+    Map<String, dynamic> toJson() => {
+        "mobileNo": mobileNo,
+        "message": message,
+        "date": date.toIso8601String(),
+    };
 }
+
+
+
+

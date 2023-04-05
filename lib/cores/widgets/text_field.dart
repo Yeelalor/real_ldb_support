@@ -52,9 +52,8 @@ class TextFieldWidgets extends StatelessWidget {
           ),
         ),
         TextField(
-          inputFormatters: onlyNumber
-              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))]
-              : [],
+          inputFormatters: onlyNumber ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))] : [],
+          
           keyboardType: number
               ? TextInputType.number
               : phone

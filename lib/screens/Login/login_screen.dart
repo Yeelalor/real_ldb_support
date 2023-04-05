@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:testflutter/cores/configs/http_config.dart';
 import 'package:testflutter/cores/widgets/alert_popup.dart';
 import 'package:testflutter/cores/widgets/loading_process.dart';
+import 'package:testflutter/screens/home/home.dart';
 import '../home/home_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -58,7 +59,7 @@ class _LoginState extends State<Login> {
             Navigator.of(context).pop();
             Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                    builder: (context) => MyHomePage(value: employeeId)),
+                    builder: (context) => HomePage(value: employeeId)),
                 (route) => false);
             storedata();
           } else {
@@ -142,7 +143,9 @@ class _LoginState extends State<Login> {
                 const SizedBox(
                   height: 80,
                 ),
+                
                 Container(
+                  
                   alignment: Alignment.center,
                   margin: const EdgeInsets.all(20.0),
                   child: Column(
@@ -188,27 +191,30 @@ class _LoginState extends State<Login> {
                         height: 5,
                       ),
                       TextField(
+                        
                         controller: staffID,
                         style: const TextStyle(
-                            fontSize: 20, fontFamily: 'NotoSans'),
+                            fontSize: 20, fontFamily: 'NotoSans',color: Colors.white),
                         decoration: const InputDecoration(
+                          
                           prefixIcon: Icon(Icons.person,
-                              color: Color.fromARGB(255, 141, 133, 133)),
+                              color: Colors.white),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: Colors.transparent,
                           contentPadding: EdgeInsets.symmetric(
-                            vertical: 5,
+                            vertical: 15,
                           ),
+
                           hintText: 'ໄອດີພະນັກງານ',
                           hintStyle: TextStyle(
                               color: Color.fromARGB(255, 186, 194, 199)),
                           border: OutlineInputBorder(),
                           enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                  width: 1, color: Color(0xFF3C98CE))),
+                                  width: 1, color: Colors.white)),
                           focusedBorder: OutlineInputBorder(
                               borderSide: BorderSide(
-                                  width: 1, color: Color(0xFF3C98CE))),
+                                  width: 1, color: Colors.white)),
                         ),
                       ),
                       emptyStaffID
@@ -227,11 +233,11 @@ class _LoginState extends State<Login> {
                           obscureText: showPassword ? false : true,
                           controller: staffPassword,
                           style: const TextStyle(
-                              fontSize: 20, fontFamily: 'NotoSans'),
+                              fontSize: 20, fontFamily: 'NotoSans',color: Colors.white),
                           decoration: InputDecoration(
                             prefixIcon: const Icon(
                               Icons.lock,
-                              color: Color.fromARGB(255, 141, 133, 133),
+                              color: Colors.white,
                             ),
                             suffixIcon: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -242,16 +248,15 @@ class _LoginState extends State<Login> {
                                       showPassword
                                           ? Icons.visibility
                                           : Icons.visibility_off,
-                                      color: const Color.fromARGB(
-                                          255, 141, 133, 133),
+                                      color: Colors.white,
                                     ),
                                     onPressed: showhidePassword),
                               ],
                             ),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: Colors.transparent,
                             contentPadding: const EdgeInsets.symmetric(
-                              vertical: 5.0,
+                              vertical: 15,
                             ),
                             hintText: 'ລະຫັດຜ່ານ',
                             hintStyle: const TextStyle(
@@ -259,10 +264,10 @@ class _LoginState extends State<Login> {
                             border: const OutlineInputBorder(),
                             enabledBorder: const OutlineInputBorder(
                                 borderSide: BorderSide(
-                                    width: 1, color: Color(0xFF3C98CE))),
+                                    width: 1, color: Colors.white)),
                             focusedBorder: const OutlineInputBorder(
                                 borderSide: BorderSide(
-                                    width: 1, color: Color(0xFF3C98CE))),
+                                    width: 1, color: Colors.white)),
                           )),
                       emptyPassword
                           ? const Text(
@@ -314,43 +319,26 @@ class _LoginState extends State<Login> {
                         style: ElevatedButton.styleFrom(
                           // primary: const Color(0xFF006FAD),
                           elevation: 0,
-                          primary: Color(0xFF3C98CE),
+                          backgroundColor: const Color(0xFF3C98CE),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0)),
-                          minimumSize: Size.fromHeight(45), //////// HERE
+                              borderRadius: BorderRadius.circular(30.0)),
+                          minimumSize: const Size.fromHeight(60), //////// HERE
                         ),
                         onPressed: () {
                           onLogin();
                         },
                         child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
                               Expanded(
-                                flex: 0,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(100.0),
-                                  child: Image.asset(
-                                    "assets/logos/ldbLogin.JPG",
-                                    height: 30.0,
-                                    width: 30.0,
-                                  ),
-                                ),
-                              ),
-                              const Expanded(
                                   flex: 0,
                                   child: Text(
                                     "ເຂົ້າສູ່ລະບົບ",
                                     style: TextStyle(
                                         fontFamily: 'NotoSans', fontSize: 18),
                                   )),
-                              const Expanded(
-                                  flex: 0,
-                                  child: Icon(
-                                    Icons.east,
-                                    size: 20,
-                                    color: Colors.white,
-                                  ))
+                              
                             ]),
                       ),
                     ],

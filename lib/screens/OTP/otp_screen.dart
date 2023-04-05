@@ -26,7 +26,7 @@ class _CheckOTPState extends State<CheckOTP> {
   bool emptyOTPData = false;
   String dateToday = DateFormat("dd-MM-yyyy").format(DateTime.now());
   String timeNow = DateFormat("HH:mm:ss").format(DateTime.now());
-  List<check_otp_model> OTP_list = [];
+  List<dynamic> otpList = [];
   late AnimationController localAnimationController;
 
   @override
@@ -34,30 +34,17 @@ class _CheckOTPState extends State<CheckOTP> {
     super.initState();
   }
 
-  void onCheckOtp() async {
+  Future<List<CheckOtpModel>?> onCheckOtp() async {
     try {
       if (telephone.text != '') {
-        OTP_list = [];
         LoadingProccess().LoadingProcess(context);
-        final data = {
-          "user": 'user',
-          "mobileNo": telephone.text,
-        };
+        final data = { "user": 'user', "mobileNo": telephone.text,};
         String enData = json.encode(data);
         final response = await Network().postData(enData, 'getOTP');
-        final body = json.decode(response.body);
+        final body = response.body;
         Navigator.of(context).pop();
         setState(() {
-          for (var i = 0; i < body.length; i++) {
-            OTP_list.add(check_otp_model.fromJson(body[i]));
-          }
-          checkTelephone = false;
-          if (OTP_list.isEmpty) {
-            AlertPopup().alertMessageWarning(
-                'ບໍ່ພົບຂໍ້ມູນ, ກະລຸນາກວດເບີໂທຂອງທ່ານໃຫ້ຖຶກຕ້ອງ',
-                BuildContext,
-                context);
-          }
+          otpList = checkOtpModelFromJson(body);
         });
       } else {
         setState(() {
@@ -68,6 +55,7 @@ class _CheckOTPState extends State<CheckOTP> {
       AlertPopup().alertMessageError(e, BuildContext, context);
       Navigator.of(context).pop();
     }
+    return null;
   }
 
   void onCopyOTPNumber(message) async {
@@ -99,49 +87,42 @@ class _CheckOTPState extends State<CheckOTP> {
                   child: Column(
                     children: [
                       Container(
+                        alignment: Alignment.topLeft,
                         width: MediaQuery.of(context).size.width,
                         child: Column(children: [
                           const Text(
                             "ເບີໂທລະສັບ",
-                            style: TextStyle(fontSize: 18),
+                            style: TextStyle(fontSize: 18)
                           ),
                           const SizedBox(
                             height: 10,
                           ),
                           TextField(
                               inputFormatters: [
-                                LengthLimitingTextInputFormatter(10)
+                                LengthLimitingTextInputFormatter(10),
                               ],
-                              // autofocus: true,
                               controller: telephone,
                               keyboardType: TextInputType.phone,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 20, fontFamily: 'NotoSans'),
+                              style: const TextStyle(fontSize: 20, fontFamily: 'NotoSans'),
                               decoration: const InputDecoration(
-                                contentPadding:
-                                    EdgeInsets.symmetric(vertical: 15),
+                                contentPadding:  EdgeInsets.symmetric(vertical: 15),
                                 hintText: '20XXXXXXXX 10 ໂຕ',
-                                hintStyle: TextStyle(
-                                    color: Color.fromARGB(255, 186, 194, 199)),
+                                hintStyle: TextStyle(color: Color.fromARGB(255, 186, 194, 199)),
                                 border: OutlineInputBorder(),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide:
                                       BorderSide(width: 1, color: Colors.blue),
                                 ),
-                                errorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                        width: 1, color: Colors.red)),
+                                errorBorder: OutlineInputBorder(borderSide: BorderSide(width: 1, color: Colors.red)),
                               )),
                           checkTelephone
-                              ? const Text(
-                                  'ກະລຸນາປ້ອນເບີໂທລະສັບ',
-                                  style: TextStyle(color: Colors.red),
+                              ? const Text( 'ກະລຸນາປ້ອນເບີໂທລະສັບ', style: TextStyle(color: Colors.red),
                                 )
                               : (const Text('')),
                         ]),
                       ),
-                      OTP_list.isNotEmpty
+                      otpList.isNotEmpty
                           ? (Container(
                               alignment: Alignment.center,
                               child: SingleChildScrollView(
@@ -153,83 +134,48 @@ class _CheckOTPState extends State<CheckOTP> {
                                         children: [
                                           const SizedBox(height: 15),
                                           ListView.builder(
-                                              physics:
-                                                  const NeverScrollableScrollPhysics(),
+                                              physics: const NeverScrollableScrollPhysics(),
                                               shrinkWrap: true,
-                                              itemCount: OTP_list.length,
+                                              itemCount: otpList.length,
                                               itemBuilder: (context, index) {
+                                                CheckOtpModel otpData = otpList[index];
                                                 return (Container(
-                                                  color: index % 2 == 0
-                                                      ? const Color.fromARGB(
-                                                          255, 225, 229, 231)
-                                                      : const Color.fromARGB(
-                                                          255, 246, 252, 255),
+                                                  color: index % 2 == 0 ? const Color.fromARGB( 255, 225, 229, 231) : const Color.fromARGB( 255, 246, 252, 255),
                                                   alignment: Alignment.center,
                                                   child: Column(
                                                     children: [
-                                                      const SizedBox(
-                                                          height: 20),
+                                                      const SizedBox(height: 20),
                                                       Container(
-                                                        margin: const EdgeInsets
-                                                                .only(
-                                                            left: 20.0,
-                                                            right: 20.0),
-                                                        alignment:
-                                                            Alignment.center,
+                                                        margin: const EdgeInsets.only( left: 20.0,right: 20.0),
+                                                        alignment: Alignment.center,
                                                         child: Row(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
+                                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                                            mainAxisAlignment: MainAxisAlignment .spaceBetween,
                                                             children: [
-                                                              const Expanded(
+                                                                const Expanded(
                                                                 flex: 0,
-                                                                child: Text(
-                                                                    "ວັນທີ",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            18,
-                                                                        fontFamily:
-                                                                            'NotoSans')),
+                                                                child: Text( "ວັນທີ",style: TextStyle( fontSize:   18, fontFamily: 'NotoSans')),
                                                               ),
                                                               Expanded(
                                                                 flex: 0,
-                                                                child: Text(
-                                                                  "${OTP_list[index].date}",
-                                                                  style: const TextStyle(
-                                                                      fontSize:
-                                                                          18),
+                                                                child: Text( "${otpData.date}",style: const TextStyle(fontSize: 18),
                                                                 ),
                                                               ),
                                                               Expanded(
                                                                 flex: 0,
-                                                                child:
-                                                                    Container(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .topLeft,
+                                                                child: Container(  alignment: Alignment.topLeft,
                                                                   child: Row(
                                                                       children: [
                                                                         InkWell(
-                                                                          child:
-                                                                              Row(
-                                                                            children: const [
-                                                                              Icon(
-                                                                                Icons.copy,
-                                                                                size: 20,
-                                                                                color: Colors.blue,
+                                                                          child:Row( children: const [
+                                                                              Icon( Icons.copy,size: 20, color: Colors.blue,
                                                                               ),
-                                                                              Text(
-                                                                                "ຄັດລອກຂໍ້ມູນ",
-                                                                                style: TextStyle(fontSize: 16, color: Colors.blue),
+                                                                              Text( "ຄັດລອກຂໍ້ມູນ", style: TextStyle(fontSize: 16, color: Colors.blue),
                                                                               ),
                                                                             ],
                                                                           ),
-                                                                          onTap:
-                                                                              () {
-                                                                            onCopyOTPNumber(OTP_list[index].message);
+                                                                          onTap: () {
+                                                                            onCopyOTPNumber(otpData.message);
                                                                           },
                                                                         )
                                                                       ]),
@@ -239,92 +185,41 @@ class _CheckOTPState extends State<CheckOTP> {
                                                       ),
                                                       const SizedBox(height: 5),
                                                       Container(
-                                                        margin: const EdgeInsets
-                                                                .only(
-                                                            left: 20.0,
-                                                            right: 0.0),
-                                                        alignment:
-                                                            Alignment.topLeft,
+                                                        margin: const EdgeInsets.only(left: 20.0,right: 0.0),
+                                                        alignment:Alignment.topLeft,
                                                         child: Row(children: [
                                                           const Expanded(
                                                             flex: 0,
-                                                            child: Text(
-                                                              "ເບີໂທ",
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      'NotoSans',
-                                                                  fontSize: 18,
-                                                                  color: Colors
-                                                                      .black),
+                                                            child: Text( "ເບີໂທ",
+                                                              style: TextStyle( fontFamily: 'NotoSans',  fontSize: 18, color: Colors.black),
                                                             ),
                                                           ),
-                                                          const Expanded(
-                                                            flex: 0,
-                                                            child: SizedBox(
-                                                              width: 20,
-                                                            ),
+                                                          const Expanded(flex: 0,
+                                                            child: SizedBox( width: 20)
                                                           ),
-                                                          Expanded(
-                                                              flex: 0,
-                                                              child: Text(
-                                                                "${OTP_list[index].mobileNo}",
-                                                                style: const TextStyle(
-                                                                    fontFamily:
-                                                                        'NotoSans',
-                                                                    fontSize:
-                                                                        18,
-                                                                    color: Colors
-                                                                        .black),
-                                                              )),
+                                                          Expanded( flex: 0,child: Text(otpData.mobileNo,
+                                                           style: const TextStyle( fontFamily: 'NotoSans', fontSize:  18,color: Colors.black),
+                                                          )),
                                                         ]),
                                                       ),
                                                       const SizedBox(height: 5),
                                                       Container(
-                                                        margin: const EdgeInsets
-                                                                .only(
-                                                            left: 20.0,
-                                                            right: 20.0),
-                                                        alignment:
-                                                            Alignment.topLeft,
+                                                        margin: const EdgeInsets.only( left: 20.0, right: 20.0),
+                                                        alignment: Alignment.topLeft,
                                                         child: Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .start,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
+                                                            mainAxisAlignment:  MainAxisAlignment.start,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
                                                               const Expanded(
-                                                                child: Text(
-                                                                  "Text",
-                                                                  style: TextStyle(
-                                                                      fontFamily:
-                                                                          'NotoSans',
-                                                                      fontSize:
-                                                                          18,
-                                                                      color: Colors
-                                                                          .black),
+                                                                child: Text("Text",
+                                                                  style: TextStyle( fontFamily: 'NotoSans',fontSize:18, color: Colors.black),
                                                                 ),
                                                               ),
                                                               Expanded(
                                                                   flex: 5,
-                                                                  child: Text(
-                                                                    "${OTP_list[index].message}",
-                                                                    style: const TextStyle(
-                                                                        fontFamily:
-                                                                            'NotoSans',
-                                                                        fontSize:
-                                                                            18,
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .bold,
-                                                                        color: Color.fromARGB(
-                                                                            255,
-                                                                            37,
-                                                                            42,
-                                                                            46)),
-                                                                  )),
-                                                            ]),
+                                                                  child: Text(otpData.message, style: const TextStyle( fontFamily: 'NotoSans', fontSize:18, fontWeight: FontWeight.bold, color: Color.fromARGB( 255,37, 42, 46)),
+                                                              )),
+                                                        ]),
                                                       ),
                                                       const SizedBox(height: 20)
                                                     ],

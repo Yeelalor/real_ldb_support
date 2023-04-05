@@ -272,7 +272,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       itemCount: listFeatures.length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3),
+                              crossAxisCount: 3,
+                              childAspectRatio: 1.7 / 2,),
                       itemBuilder: (BuildContext context, index) {
                         return InkWell(
                           onTap: () {
@@ -307,10 +308,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   textAlign: TextAlign.center,
                                 ),
                               ),
+                              const Divider(color: Colors.white,)
                             ],
                           ),
                         );
                       }),
+                    
                 ],
               ),
             )),
